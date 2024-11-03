@@ -1,7 +1,14 @@
+use std::fmt::Display;
 use std::ops::{Add, Sub};
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
 pub struct Position(pub isize, pub isize);
+
+impl Display for Position {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({}, {})", self.0, self.1)
+    }
+}
 
 impl Add for Position {
     type Output = Self;

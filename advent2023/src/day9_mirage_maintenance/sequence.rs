@@ -46,7 +46,7 @@ impl Sequence {
         let subsequences: Vec<Vec<i32>> = self.generate_subsequences();
         let mut to_add = 0i32;
         for sequence in subsequences.iter().rev().skip(1) {
-            to_add = to_add + sequence.last().unwrap();
+            to_add += sequence.last().unwrap();
         }
         to_add
     }

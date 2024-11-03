@@ -1,6 +1,7 @@
 use super::pipe_type::{InvalidPositionError, PipeType};
 use super::position::{Displacement, Position};
 use std::collections::HashMap;
+use std::fmt::Display;
 use std::str::FromStr;
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash, Copy)]
@@ -9,6 +10,13 @@ pub struct Sector {
     pipe_type: PipeType,
 }
 
+impl Sector {
+    pub fn pipe_type(&self) -> PipeType {
+        self.pipe_type
+    }
+}
+
+// TODO see to use thiserror/anyhow/eyre ?
 #[derive(Debug)]
 pub enum ParseMapError {
     EmptyString,
@@ -16,6 +24,26 @@ pub enum ParseMapError {
     PositionError(InvalidPositionError),
     MultipleStartingPositions(Position),
     NoStartingPosition,
+}
+
+impl Display for ParseMapError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ParseMapError::EmptyString => write!(f, "The source string is empty. Nothing to parse."),
+            ParseMapError::LineLength(line) => write!(f, "Invalid line length for line {} of the source string.", line),
+            ParseMapError::PositionError(err) => write!(f, "Invalid position error {}", err),
+            ParseMapError::MultipleStartingPositions(pos) => write!(f, "Multiple starting positions are defined in the source string. Fist one defined: {}", pos),
+            ParseMapError::NoStartingPosition => write!(f, "No starting position defined in the source string."),
+        }
+    }
+}
+impl std::error::Error for ParseMapError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            Self::PositionError(e) => Some(e),
+            _ => None,
+        }
+    }
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -51,8 +79,7 @@ impl FromStr for Map {
             }
             let mut sector_row: Vec<Sector> = Vec::with_capacity(width);
             for (x, p) in line.chars().enumerate() {
-                let pipe_type =
-                    PipeType::try_from(p).map_err(|e| ParseMapError::PositionError(e))?;
+                let pipe_type = PipeType::try_from(p).map_err(ParseMapError::PositionError)?;
                 let position = Position(x as isize, (height - 1 - y) as isize);
                 let sector = Sector {
                     position,

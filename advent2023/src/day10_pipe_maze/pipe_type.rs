@@ -1,4 +1,6 @@
 use super::position::Displacement;
+use std::error::Error;
+use std::fmt::Display;
 
 #[derive(Debug, Eq, PartialEq, Copy, Clone, Hash)]
 pub enum PipeType {
@@ -12,8 +14,21 @@ pub enum PipeType {
     StartingPosition,
 }
 
+// TODO should rename that error, this is about pipe type
 #[derive(Debug, Eq, PartialEq)]
 pub struct InvalidPositionError(pub char);
+
+impl Display for InvalidPositionError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Invalid pipe type during conversion. Symbol found: {}",
+            self.0
+        )
+    }
+}
+
+impl Error for InvalidPositionError {}
 
 impl TryFrom<char> for PipeType {
     type Error = InvalidPositionError;
